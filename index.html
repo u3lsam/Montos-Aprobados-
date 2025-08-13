@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Registros - MyCredimedia</title>
+    
+    <!-- Metadatos para la PWA (Aplicación Web Progresiva) -->
+    <meta name="theme-color" content="#f59e0b"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Montos">
+    <link rel="apple-touch-icon" href="https://placehold.co/192x192/f59e0b/ffffff?text=MC">
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Incluimos Tailwind CSS para un diseño moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; filter: invert(0.5); }
+        #edit-modal, #confirm-modal { transition: opacity 0.3s ease-in-out; }
+        .sortable { cursor: pointer; user-select: none; }
+        .sortable:hover { background-color: #fef3c7; } /* Color ámbar claro para hover */
+        .fila-registro {
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+            transform-origin: top;
+        }
+        .fila-registro.entering {
+            opacity: 0;
+            transform: scaleY(0.8);
+        }
+        .fila-registro.exiting {
+            opacity: 0;
+            transform: scaleY(0.8);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto max-w-5xl p-4 sm:p-8">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Montos Aprobados</h1>
+            <p class="text-gray-600 mt-2">MyCredimedia</p>
+        </header>
+
+        <!-- Formulario para añadir nuevos registros -->
+        <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+            <form id="registro-form" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+                <div class="form-group">
+                    <label for="fecha" class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                    <input type="date" id="fecha" required class="w-full px-3 py-2 bg-gray-50 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div class="form-group">
+                    <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre del Cliente</label>
+                    <input type="text" id="nombre" placeholder="Ej: Ana Rodríguez" required class="w-full px-3 py-2 bg-gray-50 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div class="form-group">
+                    <label for="monto" class="block text-sm font-medium text-gray-700 mb-1">Monto Aprobado (RD$)</label>
+                    <input type="number" id="monto" placeholder="Ej: 15000" min="0" step="0.01" required class="w-full px-3 py-2 bg-gray-50 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div class="form-group">
+                    <label for="atendido" class="block text-sm font-medium text-gray-700 mb-1">Atendido por</label>
+                    <select id="atendido" required class="w-full px-3 py-2 bg-gray-50 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <option value="Samuel">Samuel</option>
+                        <option value="Laidin">Laidin</option>
+                    </select>
+                </div>
+                <div class="md:col-span-4 flex flex-col sm:flex-row justify-center items-center gap-4 mt-4">
+                     <button type="submit" class="w-full sm:w-auto bg-amber-500 text-white font-bold py-3 px-8 rounded-lg hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-all transform hover:scale-105">
+                        Añadir a la Lista
+                    </button>
+                    <button type="button" id="export-csv-btn" class="w-full sm:w-auto bg-gray-700 text-white font-bold py-3 px-8 rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 transition-all transform hover:scale-105">
+                        Exportar a CSV
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Tabla para mostrar los datos -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="flex flex-col md:flex-row justify-between items-center p-4 md:p-6 border-b gap-4">
+                <h2 class="text-2xl font-bold text-gray-800">Registros Guardados</h2>
+                <div class="relative">
+                    <input type="text" id="search-input" placeholder="Buscar por nombre..." class="w-full md:w-64 pl-4 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    <svg class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" /></svg>
+                </div>
+                <span id="total-monto" class="text-xl font-bold text-amber-600"></span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-gray-50 text-xs text-gray-700 uppercase">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 sortable" data-sort="fecha">Fecha <span class="sort-icon"></span></th>
+                            <th scope="col" class="px-6 py-3 sortable" data-sort="nombre">Nombre <span class="sort-icon"></span></th>
+                            <th scope="col" class="px-6 py-3 sortable" data-sort="monto">Monto Aprobado <span class="sort-icon"></span></th>
+                            <th scope="col" class="px-6 py-3 sortable" data-sort="atendidoPor">Atendido por <span class="sort-icon"></span></th>
+                            <th scope="col" class="px-6 py-3 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-clientes" class="divide-y"></tbody>
+                </table>
+                 <div id="empty-state" class="text-center p-8 text-gray-500 hidden">
+                    <p>No se encontraron registros. ¡Intenta con otra búsqueda o añade uno nuevo!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modales -->
+    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden opacity-0">
+        <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md">
+            <h3 class="text-2xl font-bold mb-6">Editar Registro</h3>
+            <form id="edit-form">
+                <input type="hidden" id="edit-id">
+                <div class="mb-4">
+                    <label for="edit-fecha" class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                    <input type="date" id="edit-fecha" required class="w-full px-3 py-2 bg-gray-50 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div class="mb-4">
+                    <label for="edit-nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre del Cliente</label>
+                    <input type="text" id="edit-nombre" required class="w-full px-3 py-2 bg-gray-50 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div class="mb-4">
+                    <label for="edit-monto" class="block text-sm font-medium text-gray-700 mb-1">Monto Aprobado (RD$)</label>
+                    <input type="number" id="edit-monto" min="0" step="0.01" required class="w-full px-3 py-2 bg-gray-50 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div class="mb-6">
+                    <label for="edit-atendido" class="block text-sm font-medium text-gray-700 mb-1">Atendido por</label>
+                    <select id="edit-atendido" required class="w-full px-3 py-2 bg-gray-50 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <option value="Samuel">Samuel</option>
+                        <option value="Laidin">Laidin</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-4">
+                    <button type="button" id="cancel-edit" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancelar</button>
+                    <button type="submit" class="px-6 py-2 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden opacity-0">
+        <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md text-center">
+            <h3 class="text-xl font-bold mb-4">¿Estás seguro?</h3>
+            <p class="text-gray-600 mb-6">Esta acción no se puede deshacer. El registro será eliminado permanentemente.</p>
+            <div class="flex justify-center gap-4">
+                <button type="button" id="cancel-delete" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancelar</button>
+                <button type="button" id="confirm-delete-btn" class="px-6 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700">Sí, eliminar</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Script para registrar el Service Worker y el Manifiesto ---
+        // 1. Crear y registrar el Manifiesto dinámicamente
+        const manifest = {
+            "name": "Sistema de Registros - MyCredimedia",
+            "short_name": "Montos",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#ffffff",
+            "theme_color": "#f59e0b",
+            "description": "Aplicación para registrar montos aprobados.",
+            "icons": [
+                {
+                    "src": "https://placehold.co/192x192/f59e0b/ffffff?text=MC",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                },
+                {
+                    "src": "https://placehold.co/512x512/f59e0b/ffffff?text=MC",
+                    "sizes": "512x512",
+                    "type": "image/png"
+                }
+            ]
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        document.querySelector('link[rel="manifest"]').setAttribute('href', manifestURL);
+
+        // 2. Registrar el Service Worker
+        if ('serviceWorker' in navigator) {
+            const swContent = `
+                self.addEventListener('install', (event) => {
+                    event.waitUntil(
+                        caches.open('v1').then((cache) => {
+                            return cache.addAll(['/']);
+                        })
+                    );
+                });
+                self.addEventListener('fetch', (event) => {
+                    event.respondWith(
+                        caches.match(event.request).then((response) => {
+                            return response || fetch(event.request);
+                        })
+                    );
+                });
+            `;
+            const swBlob = new Blob([swContent], {type: 'application/javascript'});
+            const swURL = URL.createObjectURL(swBlob);
+
+            navigator.serviceWorker.register(swURL)
+                .then(reg => console.log('Service Worker registrado con éxito.', reg))
+                .catch(err => console.log('Error al registrar el Service Worker.', err));
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- SELECCIÓN DE ELEMENTOS ---
+            const registroForm = document.getElementById('registro-form');
+            const listaClientes = document.getElementById('lista-clientes');
+            const emptyState = document.getElementById('empty-state');
+            const totalMontoEl = document.getElementById('total-monto');
+            const editModal = document.getElementById('edit-modal');
+            const editForm = document.getElementById('edit-form');
+            const cancelEditBtn = document.getElementById('cancel-edit');
+            const searchInput = document.getElementById('search-input');
+            const confirmModal = document.getElementById('confirm-modal');
+            const cancelDeleteBtn = document.getElementById('cancel-delete');
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+            const exportCsvBtn = document.getElementById('export-csv-btn');
+
+            // --- ESTADO DE LA APLICACIÓN ---
+            let sortState = { column: 'fecha', direction: 'desc' };
+            let recordToDeleteId = null;
+
+            // --- LÓGICA DE DATOS ---
+            const obtenerRegistros = () => JSON.parse(localStorage.getItem('registrosTrimestrales')) || [];
+            const guardarRegistros = (registros) => localStorage.setItem('registrosTrimestrales', JSON.stringify(registros));
+
+            // --- RENDERIZADO Y VISTA ---
+            const renderizarRegistro = (registro, isNew = false) => {
+                const fila = document.createElement('tr');
+                fila.className = 'fila-registro bg-white hover:bg-gray-50';
+                if (isNew) {
+                    fila.classList.add('entering');
+                }
+                fila.setAttribute('data-id', registro.id);
+                const montoFormateado = parseFloat(registro.monto).toLocaleString('es-DO', { style: 'currency', currency: 'DOP' });
+                fila.innerHTML = `
+                    <td class="px-6 py-4">${registro.fecha}</td>
+                    <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">${registro.nombre}</td>
+                    <td class="px-6 py-4">${montoFormateado}</td>
+                    <td class="px-6 py-4">${registro.atendidoPor}</td>
+                    <td class="px-6 py-4 text-center space-x-4">
+                        <button class="font-medium text-amber-600 hover:text-amber-800" onclick="abrirModalEdicion('${registro.id}')">Editar</button>
+                        <button class="font-medium text-red-600 hover:text-red-800" onclick="abrirModalConfirmacion('${registro.id}')">Eliminar</button>
+                    </td>
+                `;
+                
+                if (isNew) {
+                    listaClientes.prepend(fila);
+                    setTimeout(() => fila.classList.remove('entering'), 50);
+                } else {
+                    listaClientes.appendChild(fila);
+                }
+            };
+
+            const actualizarIconosDeOrden = () => {
+                document.querySelectorAll('.sort-icon').forEach(icon => icon.textContent = '');
+                const activeIcon = document.querySelector(`.sortable[data-sort="${sortState.column}"] .sort-icon`);
+                if (activeIcon) activeIcon.textContent = sortState.direction === 'asc' ? ' ▲' : ' ▼';
+            };
+
+            const getRegistrosFiltradosYOrdenados = () => {
+                let registros = obtenerRegistros();
+                const searchTerm = searchInput.value.toLowerCase();
+                if (searchTerm) registros = registros.filter(r => r.nombre.toLowerCase().includes(searchTerm));
+                registros.sort((a, b) => {
+                    const valA = a[sortState.column], valB = b[sortState.column];
+                    let comparison = 0;
+                    if (sortState.column === 'monto') {
+                        comparison = parseFloat(valA) - parseFloat(valB);
+                    } else {
+                        comparison = String(valA || '').localeCompare(String(valB || ''));
+                    }
+                    return sortState.direction === 'asc' ? comparison : -comparison;
+                });
+                return registros;
+            };
+
+            const actualizarVista = (newRecordId = null) => {
+                listaClientes.innerHTML = '';
+                const registros = getRegistrosFiltradosYOrdenados();
+
+                const registrosAgrupados = registros.reduce((acc, registro) => {
+                    const fecha = new Date(registro.fecha + 'T00:00:00'); 
+                    const mesAnio = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' }).format(fecha);
+                    if (!acc[mesAnio]) {
+                        acc[mesAnio] = [];
+                    }
+                    acc[mesAnio].push(registro);
+                    return acc;
+                }, {});
+
+                const mesesOrdenados = Object.keys(registrosAgrupados).sort((a, b) => {
+                    const [mesA, , anioA] = a.split(' ');
+                    const [mesB, , anioB] = b.split(' ');
+                    const dateA = new Date(`${mesA} 1, ${anioA}`);
+                    const dateB = new Date(`${mesB} 1, ${anioB}`);
+                    return dateB - dateA;
+                });
+
+                mesesOrdenados.forEach(mesAnio => {
+                    const grupoFila = document.createElement('tr');
+                    grupoFila.innerHTML = `<td colspan="5" class="px-6 py-3 bg-amber-50 text-amber-800 font-bold text-sm capitalize">${mesAnio}</td>`;
+                    listaClientes.appendChild(grupoFila);
+                    registrosAgrupados[mesAnio].forEach(registro => {
+                        renderizarRegistro(registro, registro.id === newRecordId);
+                    });
+                });
+                
+                actualizarIconosDeOrden();
+
+                const total = registros.reduce((sum, r) => sum + parseFloat(r.monto || 0), 0);
+                totalMontoEl.textContent = `Total: ${total.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' })}`;
+
+                if (registros.length === 0) {
+                    emptyState.classList.remove('hidden');
+                    totalMontoEl.classList.add('hidden');
+                } else {
+                    emptyState.classList.add('hidden');
+                    totalMontoEl.classList.remove('hidden');
+                }
+            };
+
+            // --- MANEJO DE EVENTOS ---
+            const anadirRegistro = (e) => {
+                e.preventDefault();
+                const nuevoRegistro = { 
+                    id: Date.now().toString(), 
+                    fecha: document.getElementById('fecha').value, 
+                    nombre: document.getElementById('nombre').value, 
+                    monto: document.getElementById('monto').value,
+                    atendidoPor: document.getElementById('atendido').value 
+                };
+                const registros = obtenerRegistros();
+                registros.push(nuevoRegistro);
+                guardarRegistros(registros);
+                actualizarVista(nuevoRegistro.id);
+                registroForm.reset();
+            };
+
+            const abrirModalEdicion = (id) => {
+                const registro = obtenerRegistros().find(r => r.id === id);
+                if (registro) {
+                    document.getElementById('edit-id').value = registro.id;
+                    document.getElementById('edit-fecha').value = registro.fecha;
+                    document.getElementById('edit-nombre').value = registro.nombre;
+                    document.getElementById('edit-monto').value = registro.monto;
+                    document.getElementById('edit-atendido').value = registro.atendidoPor;
+                    editModal.classList.remove('hidden');
+                    setTimeout(() => editModal.classList.remove('opacity-0'), 20);
+                }
+            };
+            window.abrirModalEdicion = abrirModalEdicion;
+            const cerrarModalEdicion = () => {
+                editModal.classList.add('opacity-0');
+                setTimeout(() => editModal.classList.add('hidden'), 300);
+            };
+            const abrirModalConfirmacion = (id) => {
+                recordToDeleteId = id;
+                confirmModal.classList.remove('hidden');
+                setTimeout(() => confirmModal.classList.remove('opacity-0'), 20);
+            };
+            window.abrirModalConfirmacion = abrirModalConfirmacion;
+            const cerrarModalConfirmacion = () => {
+                confirmModal.classList.add('opacity-0');
+                setTimeout(() => confirmModal.classList.add('hidden'), 300);
+                recordToDeleteId = null;
+            };
+            
+            const guardarCambios = (e) => {
+                e.preventDefault();
+                const id = document.getElementById('edit-id').value;
+                let registros = obtenerRegistros();
+                const index = registros.findIndex(r => r.id === id);
+                if (index > -1) {
+                    registros[index] = { 
+                        ...registros[index], 
+                        fecha: document.getElementById('edit-fecha').value, 
+                        nombre: document.getElementById('edit-nombre').value, 
+                        monto: document.getElementById('edit-monto').value,
+                        atendidoPor: document.getElementById('edit-atendido').value
+                    };
+                    guardarRegistros(registros);
+                    actualizarVista();
+                    cerrarModalEdicion();
+                }
+            };
+
+            const eliminarRegistro = () => {
+                if (recordToDeleteId) {
+                    const filaAEliminar = document.querySelector(`tr[data-id='${recordToDeleteId}']`);
+                    if (filaAEliminar) {
+                        filaAEliminar.classList.add('exiting');
+                        setTimeout(() => {
+                            let registros = obtenerRegistros().filter(r => r.id !== recordToDeleteId);
+                            guardarRegistros(registros);
+                            actualizarVista();
+                            cerrarModalConfirmacion();
+                        }, 400);
+                    }
+                }
+            };
+
+            const exportarACSV = () => {
+                const registros = getRegistrosFiltradosYOrdenados();
+                if (registros.length === 0) {
+                    alert('No hay registros para exportar.');
+                    return;
+                }
+                const headers = ['Fecha', 'Nombre del Cliente', 'Monto Aprobado', 'Atendido por'];
+                const escapeCSV = (text) => `"${String(text).replace(/"/g, '""')}"`;
+                const csvRows = [headers.join(','), ...registros.map(r => [r.fecha, r.nombre, r.monto, r.atendidoPor].map(escapeCSV).join(','))];
+                const csvString = csvRows.join('\n');
+                const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'registros_trimestrales.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
+            // --- INICIALIZACIÓN Y LISTENERS ---
+            registroForm.addEventListener('submit', anadirRegistro);
+            editForm.addEventListener('submit', guardarCambios);
+            cancelEditBtn.addEventListener('click', cerrarModalEdicion);
+            searchInput.addEventListener('input', () => actualizarVista());
+            cancelDeleteBtn.addEventListener('click', cerrarModalConfirmacion);
+            confirmDeleteBtn.addEventListener('click', eliminarRegistro);
+            exportCsvBtn.addEventListener('click', exportarACSV);
+
+            document.querySelectorAll('.sortable').forEach(header => {
+                header.addEventListener('click', () => {
+                    const column = header.dataset.sort;
+                    sortState.column === column ? sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc' : (sortState.column = column, sortState.direction = 'asc');
+                    actualizarVista();
+                });
+            });
+
+            editModal.addEventListener('click', (e) => e.target === editModal && cerrarModalEdicion());
+            confirmModal.addEventListener('click', (e) => e.target === confirmModal && cerrarModalConfirmacion());
+            
+            actualizarVista();
+        });
+    </script>
+</body>
+</html>
