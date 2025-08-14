@@ -247,45 +247,49 @@
             let actionToConfirm = null; 
 
             // --- LÓGICA DE DATOS ---
+            const defaultData = [
+                { id: '1719460800001', fecha: '2025-06-27', nombre: 'OLGA FRANCISCA DEL POZO SOTO', monto: '425000', atendidoPor: 'Samuel' },
+                { id: '1719460800002', fecha: '2025-06-27', nombre: 'MARCOS EMILIANO DURAN RODRIGUEZ', monto: '300000', atendidoPor: 'Laidin' },
+                { id: '1719806400001', fecha: '2025-07-01', nombre: 'JOHN GRA WIL CABRAL RODRIGUEZ', monto: '235000', atendidoPor: 'Samuel' },
+                { id: '1719892800001', fecha: '2025-07-02', nombre: 'DIONI DANIEL PAREDES DE LA CRUZ', monto: '150000', atendidoPor: 'Laidin' },
+                { id: '1720497600001', fecha: '2025-07-09', nombre: 'GEDALIAS GERONIMO CASTILLO', monto: '170000', atendidoPor: 'Samuel' },
+                { id: '1720065600001', fecha: '2025-07-04', nombre: 'LUIS ALFONZO ORTIZ DIAZ', monto: '315000', atendidoPor: 'Laidin' },
+                { id: '1720584000001', fecha: '2025-07-10', nombre: 'ALEJO MONTES DE OCA HERNANDEZ', monto: '300000', atendidoPor: 'Samuel' },
+                { id: '1720670400001', fecha: '2025-07-11', nombre: 'SAMUEL OCTAVIO URBAEZ FELIZ', monto: '160000', atendidoPor: 'Laidin' },
+                { id: '1721102400001', fecha: '2025-07-16', nombre: 'MATIN MARTES PIERRE', monto: '360000', atendidoPor: 'Samuel' },
+                { id: '1721275200001', fecha: '2025-07-18', nombre: 'JOSE ALBERTO VINIER DE LA CRUZ', monto: '310000', atendidoPor: 'Laidin' },
+                { id: '1721361600001', fecha: '2025-07-19', nombre: 'YINEIRIZ SILVERIO PEÑA', monto: '450000', atendidoPor: 'Samuel' },
+                { id: '1721361600002', fecha: '2025-07-19', nombre: 'JUAN JOSE ESPINAL LARA', monto: '450000', atendidoPor: 'Laidin' },
+                { id: '1721102400002', fecha: '2025-07-16', nombre: 'LUIS ANTONIO LOPEZ CASTILLO', monto: '475000', atendidoPor: 'Samuel' },
+                { id: '1721966400001', fecha: '2025-07-26', nombre: 'MAICKOL MIGUEL TEJADA', monto: '250000', atendidoPor: 'Laidin' },
+                { id: '1721966400002', fecha: '2025-07-26', nombre: 'SCARLET NIDIA MARGARITA LOPEZ CRUZ', monto: '700000', atendidoPor: 'Samuel' },
+                { id: '1722312000001', fecha: '2025-07-30', nombre: 'FAUSTO LEONEL MARZAN MARTE', monto: '250000', atendidoPor: 'Laidin' },
+                { id: '1722312000002', fecha: '2025-07-30', nombre: 'JERENMY ANDREW MESA', monto: '185000', atendidoPor: 'Samuel' },
+                { id: '1722312000003', fecha: '2025-07-30', nombre: 'LUCAS FELIX PUENTE ZACARIAS', monto: '200000', atendidoPor: 'Laidin' },
+                { id: '1722312000004', fecha: '2025-07-30', nombre: 'OMAR SOSA MORILLO', monto: '275000', atendidoPor: 'Samuel' },
+                { id: '1722312000005', fecha: '2025-07-30', nombre: 'FRANCISCO PEREZ DE LA CRUZ', monto: '235000', atendidoPor: 'Laidin' },
+                { id: '1722484800001', fecha: '2025-08-01', nombre: 'HEISY LADY ROMERO MERCADO', monto: '175000', atendidoPor: 'Samuel' },
+                { id: '1722484800002', fecha: '2025-08-01', nombre: 'DAILIN MORA SANTANA', monto: '205000', atendidoPor: 'Laidin' },
+                { id: '1722916800001', fecha: '2025-08-06', nombre: 'GABRIEL PAYANO VASQUEZ', monto: '70000', atendidoPor: 'Samuel' },
+                { id: '1722916800002', fecha: '2025-08-06', nombre: 'CRISTOPHER MARRERO SUERO', monto: '325000', atendidoPor: 'Laidin' },
+                { id: '1722916800003', fecha: '2025-08-06', nombre: 'ANGELA ARGENTINA RODRIGUEZ ESTEVEZ', monto: '320000', atendidoPor: 'Samuel' },
+                { id: '1723003200001', fecha: '2025-08-07', nombre: 'EDUARDO OGANDO MORENO', monto: '205000', atendidoPor: 'Laidin' },
+                { id: '1723521600001', fecha: '2025-08-13', nombre: 'SAUL NATANAEL ENCARNACION OGANDO', monto: '300000', atendidoPor: 'Samuel' },
+                { id: '1723608000001', fecha: '2025-08-14', nombre: 'jose gabriel', monto: '650000', atendidoPor: 'Laidin' }
+            ];
+
             const guardarRegistros = (registros) => localStorage.setItem('registrosTrimestrales', JSON.stringify(registros));
 
-            const inicializarDatos = () => {
-                if (localStorage.getItem('registrosTrimestrales') === null) {
-                    const defaultData = [
-                        { id: '1719460800001', fecha: '2025-06-27', nombre: 'OLGA FRANCISCA DEL POZO SOTO', monto: '425000', atendidoPor: 'Samuel' },
-                        { id: '1719460800002', fecha: '2025-06-27', nombre: 'MARCOS EMILIANO DURAN RODRIGUEZ', monto: '300000', atendidoPor: 'Laidin' },
-                        { id: '1719806400001', fecha: '2025-07-01', nombre: 'JOHN GRA WIL CABRAL RODRIGUEZ', monto: '235000', atendidoPor: 'Samuel' },
-                        { id: '1719892800001', fecha: '2025-07-02', nombre: 'DIONI DANIEL PAREDES DE LA CRUZ', monto: '150000', atendidoPor: 'Laidin' },
-                        { id: '1720497600001', fecha: '2025-07-09', nombre: 'GEDALIAS GERONIMO CASTILLO', monto: '170000', atendidoPor: 'Samuel' },
-                        { id: '1720065600001', fecha: '2025-07-04', nombre: 'LUIS ALFONZO ORTIZ DIAZ', monto: '315000', atendidoPor: 'Laidin' },
-                        { id: '1720584000001', fecha: '2025-07-10', nombre: 'ALEJO MONTES DE OCA HERNANDEZ', monto: '300000', atendidoPor: 'Samuel' },
-                        { id: '1720670400001', fecha: '2025-07-11', nombre: 'SAMUEL OCTAVIO URBAEZ FELIZ', monto: '160000', atendidoPor: 'Laidin' },
-                        { id: '1721102400001', fecha: '2025-07-16', nombre: 'MATIN MARTES PIERRE', monto: '360000', atendidoPor: 'Samuel' },
-                        { id: '1721275200001', fecha: '2025-07-18', nombre: 'JOSE ALBERTO VINIER DE LA CRUZ', monto: '310000', atendidoPor: 'Laidin' },
-                        { id: '1721361600001', fecha: '2025-07-19', nombre: 'YINEIRIZ SILVERIO PEÑA', monto: '450000', atendidoPor: 'Samuel' },
-                        { id: '1721361600002', fecha: '2025-07-19', nombre: 'JUAN JOSE ESPINAL LARA', monto: '450000', atendidoPor: 'Laidin' },
-                        { id: '1721102400002', fecha: '2025-07-16', nombre: 'LUIS ANTONIO LOPEZ CASTILLO', monto: '475000', atendidoPor: 'Samuel' },
-                        { id: '1721966400001', fecha: '2025-07-26', nombre: 'MAICKOL MIGUEL TEJADA', monto: '250000', atendidoPor: 'Laidin' },
-                        { id: '1721966400002', fecha: '2025-07-26', nombre: 'SCARLET NIDIA MARGARITA LOPEZ CRUZ', monto: '700000', atendidoPor: 'Samuel' },
-                        { id: '1722312000001', fecha: '2025-07-30', nombre: 'FAUSTO LEONEL MARZAN MARTE', monto: '250000', atendidoPor: 'Laidin' },
-                        { id: '1722312000002', fecha: '2025-07-30', nombre: 'JERENMY ANDREW MESA', monto: '185000', atendidoPor: 'Samuel' },
-                        { id: '1722312000003', fecha: '2025-07-30', nombre: 'LUCAS FELIX PUENTE ZACARIAS', monto: '200000', atendidoPor: 'Laidin' },
-                        { id: '1722312000004', fecha: '2025-07-30', nombre: 'OMAR SOSA MORILLO', monto: '275000', atendidoPor: 'Samuel' },
-                        { id: '1722312000005', fecha: '2025-07-30', nombre: 'FRANCISCO PEREZ DE LA CRUZ', monto: '235000', atendidoPor: 'Laidin' },
-                        { id: '1722484800001', fecha: '2025-08-01', nombre: 'HEISY LADY ROMERO MERCADO', monto: '175000', atendidoPor: 'Samuel' },
-                        { id: '1722484800002', fecha: '2025-08-01', nombre: 'DAILIN MORA SANTANA', monto: '205000', atendidoPor: 'Laidin' },
-                        { id: '1722916800001', fecha: '2025-08-06', nombre: 'GABRIEL PAYANO VASQUEZ', monto: '70000', atendidoPor: 'Samuel' },
-                        { id: '1722916800002', fecha: '2025-08-06', nombre: 'CRISTOPHER MARRERO SUERO', monto: '325000', atendidoPor: 'Laidin' },
-                        { id: '1722916800003', fecha: '2025-08-06', nombre: 'ANGELA ARGENTINA RODRIGUEZ ESTEVEZ', monto: '320000', atendidoPor: 'Samuel' },
-                        { id: '1723003200001', fecha: '2025-08-07', nombre: 'EDUARDO OGANDO MORENO', monto: '205000', atendidoPor: 'Laidin' },
-                        { id: '1723521600001', fecha: '2025-08-13', nombre: 'SAUL NATANAEL ENCARNACION OGANDO', monto: '300000', atendidoPor: 'Samuel' },
-                        { id: '1723608000001', fecha: '2025-08-14', nombre: 'jose gabriel', monto: '650000', atendidoPor: 'Laidin' }
-                    ];
+            const obtenerRegistros = () => {
+                const dataGuardada = localStorage.getItem('registrosTrimestrales');
+                if (dataGuardada === null) {
+                    // Si no hay nada en el almacenamiento, carga los datos por defecto y guárdalos.
                     guardarRegistros(defaultData);
+                    return defaultData;
                 }
+                // Si hay datos, úsalos.
+                return JSON.parse(dataGuardada);
             };
-            
-            const obtenerRegistros = () => JSON.parse(localStorage.getItem('registrosTrimestrales')) || [];
 
             // --- RENDERIZADO Y VISTA ---
             const renderizarRegistro = (registro, isNew = false) => {
@@ -480,22 +484,40 @@
             };
 
             const eliminarRegistro = () => {
-                if (recordToDeleteId) {
-                    const filaAEliminar = document.querySelector(`tr[data-id='${recordToDeleteId}']`);
-                    if (filaAEliminar) {
-                        filaAEliminar.classList.add('exiting');
-                        setTimeout(() => {
-                            let registros = obtenerRegistros().filter(r => r.id !== recordToDeleteId);
-                            guardarRegistros(registros);
-                            actualizarVista();
-                        }, 400);
-                    }
+                if (!recordToDeleteId) return;
+                
+                const filaAEliminar = document.querySelector(`tr[data-id='${recordToDeleteId}']`);
+                
+                if (filaAEliminar) {
+                    filaAEliminar.classList.add('exiting');
+                    setTimeout(() => {
+                        let registros = obtenerRegistros().filter(r => r.id !== recordToDeleteId);
+                        guardarRegistros(registros);
+                        actualizarVista();
+                        cerrarModalConfirmacion();
+                    }, 400);
+                } else {
+                    let registros = obtenerRegistros().filter(r => r.id !== recordToDeleteId);
+                    guardarRegistros(registros);
+                    actualizarVista();
+                    cerrarModalConfirmacion();
                 }
             };
             
             const reiniciarRegistros = () => {
-                localStorage.removeItem('registrosTrimestrales');
-                actualizarVista();
+                const filas = document.querySelectorAll('#lista-clientes tr.fila-registro');
+                if (filas.length > 0) {
+                    filas.forEach(fila => fila.classList.add('exiting'));
+                    setTimeout(() => {
+                        localStorage.removeItem('registrosTrimestrales');
+                        actualizarVista();
+                        cerrarModalConfirmacion();
+                    }, 400);
+                } else {
+                    localStorage.removeItem('registrosTrimestrales');
+                    actualizarVista();
+                    cerrarModalConfirmacion();
+                }
             };
 
             const handleConfirm = () => {
@@ -504,7 +526,6 @@
                 } else if (actionToConfirm === 'reset') {
                     reiniciarRegistros();
                 }
-                cerrarModalConfirmacion();
             };
 
             const exportarAExcel = () => {
@@ -523,7 +544,7 @@
 
                 // --- PREPARACIÓN DE DATOS PARA LA HOJA DE CÁLCULO ---
                 const ws_data = [];
-                const dataStartIndex = 11; // Fila donde comienzan los datos (después de encabezados y resumen)
+                const dataStartIndex = 11; // Fila donde comienzan los datos
 
                 // Encabezado del reporte
                 ws_data.push(['Reporte de Montos Aprobados']);
@@ -617,7 +638,7 @@
             };
 
             // --- INICIALIZACIÓN Y LISTENERS ---
-            inicializarDatos(); 
+            obtenerRegistros(); // Llama a esta función para asegurar que los datos por defecto se carguen si es necesario
             
             registroForm.addEventListener('submit', anadirRegistro);
             editForm.addEventListener('submit', guardarCambios);
@@ -651,3 +672,4 @@
     </script>
 </body>
 </html>
+
